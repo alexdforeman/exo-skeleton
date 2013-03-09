@@ -1,0 +1,180 @@
+<project name="cethrepoh" default="help" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
+  <description>Build System for cethrepoh the resource spellchecking machine</description>
+
+  <property file="${user.name}.properties" />
+  <property file="build.properties" />
+
+  <tstamp><format property="current.time" pattern="MMddyyyyhhmmss" /></tstamp>
+
+  <!-- Global properties for this build -->
+  <property name="group"     value="${exo.global.group}" />
+  <property name="artifact"  value="${exo.global.artifact}" />
+  <property name="timestamp" value="${current.time}" />
+  <property name="version"   value="${exo.global.version}" />
+
+  <property name="src-main"               location="src/main/java"/>
+  <property name="src-main-resources"     location="src/main/resources"/>
+  <property name="unit-tests"             location="src/test/java"/>
+  <property name="unit-tests-resources"   location="src/test/resources"/>
+
+  <property name="build-dir"              location=".build"/>
+  <property name="src-dest-dir"           location="${build-dir}/main"/>
+  <property name="unit-tests-dest-dir"    location="${build-dir}/unit-tests"/>
+
+  <property name="target-dir"             location="target"/>
+  <property name="code-metrics-dir"       location="${target-dir}/metrics"/>
+  <property name="unit-tests-results-dir" location="${code-metrics-dir}/unit-tests" />
+
+  <!-- Ivy setup -->
+  <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" />
+  <ivy:configure file="${basedir}/ivysettings.xml" />
+
+
+  <!-- Targets -->
+  <target name="clean" >
+    <delete dir="${build-dir}" />
+    <delete dir="${target-dir}" />
+  </target>
+
+  <target name="ivy-cleancache">
+    <ivy:cleancache />
+  </target>
+
+  <target name="-init">
+    <mkdir dir="${build-dir}" />
+  </target>
+
+  <target name="compile" depends="-init">
+    <mkdir dir="${src-dest-dir}" />
+    <ivy:cachepath pathid="compile.classpath" conf="compile" />
+    <javac srcdir="${src-main}" destdir="${build-dir}/main" includeantruntime="true" debug="true" debuglevel="lines,vars,source" >
+      <classpath>
+        <path refid="compile.classpath"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="compile-unit-tests" depends="package-main">
+    <mkdir dir="${unit-tests-dest-dir}" />
+    <ivy:cachepath pathid="compile-unit-tests.classpath" conf="test" />
+    <javac srcdir="${unit-tests}" destdir="${unit-tests-dest-dir}" includeantruntime="true" debug="true" debuglevel="lines,vars,source" >
+      <classpath>
+        <pathelement location="${target-dir}/${artifact}.jar" />
+        <path refid="compile-unit-tests.classpath"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="package-main" depends="compile">
+    <jar destfile="${target-dir}/${artifact}.jar">
+      <fileset dir="${src-dest-dir}" excludes="**/*Test.class" />
+      <fileset dir="${src-main-resources}"/>
+    </jar>
+  </target>
+
+  <target name="package-unit-tests" depends="compile-unit-tests">
+    <jar destfile="${target-dir}/${artifact}-unit-tests.jar">
+      <fileset dir="${unit-tests-dest-dir}" />
+    </jar>
+  </target>
+
+  <target name="run-unit-tests" depends="package">
+
+    <mkdir dir="${code-metrics-dir}" />
+    <mkdir dir="${unit-tests-results-dir}" />
+    <mkdir dir="${unit-tests-results-dir}/html" />
+
+    <echo message="${code-metrics-dir}" />
+    <echo message="${unit-tests-results-dir}" />
+    <ivy:cachepath pathid="compile-unit-tests.classpath" conf="test" />
+    <junit printsummary="yes" haltonfailure="no">
+
+      <classpath>
+        <path refid="compile-unit-tests.classpath"/>
+         <pathelement location="${target-dir}/${artifact}.jar" />
+        <pathelement location="${target-dir}/${artifact}-unit-tests.jar" />
+      </classpath>
+
+      <batchtest fork="no" todir="${unit-tests-results-dir}" >
+        <fileset dir="${unit-tests}">
+          <include name="**/*Test*.java"/>
+          <exclude name="**/AllTests.java"/>
+        </fileset>
+        <formatter type="xml"/>
+      </batchtest>
+    </junit>
+    <junitreport todir="${unit-tests-results-dir}">
+      <fileset dir="${unit-tests-results-dir}">
+        <include name="TEST-*.xml"/>
+      </fileset>
+      <report format="frames" todir="${unit-tests-results-dir}/html" />
+    </junitreport>
+  </target>
+
+  <!-- Code analysis targets -->
+
+  <target name="findbugs" depends="package" unless="exo.findbugs.off">
+    <property name="report.findbugs.dir" value="${code-metrics-dir}/findbugs" />
+    <mkdir dir="${report.findbugs.dir}" />
+
+    <ivy:cachepath pathid="findbugs.path" conf="findbugs" />
+    <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpathref="findbugs.path"/>
+
+    <findbugs classpathref="findbugs.path" output="${exo.global.reports.output}" outputFile="${report.findbugs.dir}/findbugs.${exo.global.reports.output}" >
+      <sourcePath path="${src-main}" />
+      <class location="${target-dir}/${artifact}.jar" />
+    </findbugs>
+  </target>
+
+  <target name="checkstyle" unless="exo.checkstyle.off">
+    <property name="report.checkstyle.dir" value="${code-metrics-dir}/checkstyle" />
+    <mkdir dir="${report.checkstyle.dir}" />
+    <ivy:cachepath pathid="checkstyle.path" conf="checkstyle" />
+    <taskdef resource="checkstyletask.properties" classpathref="checkstyle.path" />
+    <checkstyle config="${basedir}/etc/checkstyle.xml"
+                failureProperty="checkstyle.failure"
+                failOnViolation="false"
+                classpathref="checkstyle.path" >
+      <formatter type="xml" tofile="${report.checkstyle.dir}/checkstyle_report.xml" />
+      <fileset dir="${src-main}" includes="**/*.java" />
+    </checkstyle>
+
+    <xslt basedir="${report.checkstyle.dir}"
+          destdir="${report.checkstyle.dir}"
+          style="${basedir}/etc/checkstyle-noframes-sorted.xml"
+          classpathref="checkstyle.path" />
+
+  </target>
+
+  <target name="pmd" unless="exo.pmd.off">
+    <property name="report.pmd.dir" value="${code-metrics-dir}/pmd" />
+    <mkdir dir="${report.pmd.dir}" />
+
+    <ivy:cachepath pathid="pmd.path" conf="pmd" />
+    <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.path" />
+
+    <pmd rulesetfiles="rulesets/basic.xml">
+      <formatter type="${exo.global.reports.output}" toFile="${report.pmd.dir}/pmd_report.${exo.global.reports.output}" />
+      <fileset dir="${src-main}">
+        <include name="**/*.java" />
+      </fileset>
+    </pmd>
+  </target>
+
+
+  <target name="package" depends="package-main, package-unit-tests"  />
+  <target name="build" depends="package, run-unit-tests" description="--> Compiles and runs the unit tests" />
+  <target name="dist" depends="clean, package, run-unit-tests, checkstyle, findbugs, pmd" description="--> Distribution build. Builds, runs all tests, tools and " />
+
+  <!-- Only commment out if you want vizant being generated and have vizant installed in ~/.ant/lib  -->
+  <taskdef name="vizant" classname="net.sourceforge.vizant.Vizant" />
+  <target name="vizant" description="Generates picture of build system. *Note* Requires dot and vizant installed." >
+    <vizant antfile="build.xml" outfile="build.dot"/>
+    <exec executable="dot" ><arg line="-Tpng build.dot -o ${code-metrics-dir}/vizant.png"/></exec>
+    <delete file="build.dot" />
+  </target>
+
+</project>

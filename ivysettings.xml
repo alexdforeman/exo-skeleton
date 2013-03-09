@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-settings>
+  <!-- Load properties -->
+  <properties file="${ivy.settings.dir}/${user.name}.properties" />
+  <properties file="${ivy.settings.dir}/build.properties" />
+
+  <settings defaultResolver="default-chain" />
+
+  <resolvers>
+    <chain name="default-chain" returnFirst="true" >
+      <ibiblio name="Central" m2compatible="true" />
+      <ibiblio name="Mvnrepository"
+               root="http://mvnrepository.com/artifact/"
+               m2compatible="true" />
+      <ibiblio name="SonaType-Central"
+               root="http://oss.sonatype.org/content/repositories/central/"
+               m2compatible="true" />
+      <ibiblio name="SonaType-Releases"
+               root="http://oss.sonatype.org/content/repositories/releases/"
+               m2compatible="true" />
+      <ibiblio name="SonaType-Snapshots"
+               root="http://oss.sonatype.org/content/repositories/snapshots/"
+               m2compatible="true" />
+    </chain>
+  </resolvers>
+</ivy-settings>
