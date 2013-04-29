@@ -1,4 +1,4 @@
-<project name="cethrepoh" default="help" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+<project name="replace_with_your_project" default="dist" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
 
   <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
 
@@ -71,7 +71,9 @@
   <target name="package-main" depends="compile">
     <jar destfile="${target-dir}/${artifact}.jar">
       <fileset dir="${src-dest-dir}" excludes="**/*Test.class" />
+      <!-- // Uncomment to package the resources directory as well.
       <fileset dir="${src-main-resources}"/>
+      -->
     </jar>
   </target>
 
@@ -168,13 +170,5 @@
   <target name="package" depends="package-main, package-unit-tests"  />
   <target name="build" depends="package, run-unit-tests" description="--> Compiles and runs the unit tests" />
   <target name="dist" depends="clean, package, run-unit-tests, checkstyle, findbugs, pmd" description="--> Distribution build. Builds, runs all tests, tools and " />
-
-  <!-- Only commment out if you want vizant being generated and have vizant installed in ~/.ant/lib  -->
-  <taskdef name="vizant" classname="net.sourceforge.vizant.Vizant" />
-  <target name="vizant" description="Generates picture of build system. *Note* Requires dot and vizant installed." >
-    <vizant antfile="build.xml" outfile="build.dot"/>
-    <exec executable="dot" ><arg line="-Tpng build.dot -o ${code-metrics-dir}/vizant.png"/></exec>
-    <delete file="build.dot" />
-  </target>
 
 </project>
