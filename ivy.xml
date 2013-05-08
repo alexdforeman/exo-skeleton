@@ -17,10 +17,9 @@
   </publications>
 
   <dependencies>
+    <!-- Your API Dependencies here -->
     <dependency org="com.google.guava" name="guava" rev="14.0-rc1" conf="runtime->*" />
-    <dependency org="log4j"            name="log4j" rev="1.2.14"   conf="runtime->*" />
-    <dependency org="org.jsoup"        name="jsoup" rev="1.7.2"    conf="runtime->*" />
-    <dependency org="xom"              name="xom"   rev="1.2.5"    conf="runtime->*" />
+
 
     <!-- Testing Dependencies -->
     <dependency org="junit" name="junit" rev="4.10" conf="test->*" />
