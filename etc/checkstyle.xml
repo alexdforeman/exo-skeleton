@@ -6,9 +6,7 @@
 <!--
 Checkstyle that checks a good variant of the sun/oracle code conventions.
 -->
-
 <module name="Checker">
-
 
   <!-- Checks whether files end with a new line.                        -->
   <!-- See http://checkstyle.sf.net/config_misc.html#NewlineAtEndOfFile -->
@@ -36,8 +34,6 @@ Checkstyle that checks a good variant of the sun/oracle code conventions.
   </module>
 
   <module name="TreeWalker">
-
-
     <!-- Checks for Javadoc comments.                     -->
     <!-- See http://checkstyle.sf.net/config_javadoc.html -->
     <module name="JavadocMethod">
@@ -56,21 +52,25 @@ Checkstyle that checks a good variant of the sun/oracle code conventions.
 
     <!-- Checks for Naming Conventions.                  -->
     <!-- See http://checkstyle.sf.net/config_naming.html -->
-    <module name="ConstantName"/>
+    <module name="ConstantName">
+      <property name="format" value="^_[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+    </module>
     <module name="LocalFinalVariableName"/>
     <module name="LocalVariableName">
       <property name="format" value="^[a-zA-Z0-9]*_$"/>
       <property name="tokens" value="PARAMETER_DEF"/>
     </module>
     <module name="MemberName">
-        <property name="format" value="^_[A-Z][a-zA-Z0-9]*$"/>
+      <property name="format" value="^_[a-zA-Z0-9]*$"/>
     </module>
     <module name="MethodName"/>
     <module name="PackageName"/>
     <module name="ParameterName">
-        <property name="format" value="^[a-zA-Z0-9]*_$"/>
+      <property name="format" value="^[a-zA-Z0-9]*_$"/>
     </module>
-    <module name="StaticVariableName"/>
+    <module name="StaticVariableName">
+      <property name="format" value="^_[a-zA-Z0-9]*$"/>
+    </module>
     <module name="TypeName"/>
 
     <!-- Checks for imports                              -->

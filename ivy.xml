@@ -17,12 +17,9 @@
   </publications>
 
   <dependencies>
-    <!-- Your API Dependencies here -->
-    <dependency org="com.google.guava" name="guava" rev="14.0-rc1" conf="runtime->*" />
-
 
     <!-- Testing Dependencies -->
-    <dependency org="junit" name="junit" rev="4.10" conf="test->*" />
+    <dependency org="junit" name="junit" rev="4.+" conf="test->*" />
 
     <!-- Dependencys for static analysis tools -->
     <dependency org="com.google.code.findbugs"  name="findbugs-ant"    rev="2.0.1"    conf="findbugs->default" />
