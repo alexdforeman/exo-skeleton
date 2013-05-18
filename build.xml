@@ -158,7 +158,7 @@
     <ivy:cachepath pathid="pmd.path" conf="pmd" />
     <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.path" />
 
-    <pmd rulesetfiles="rulesets/basic.xml">
+    <pmd rulesetfiles="rulesets/java/basic.xml">
       <formatter type="${exo.global.reports.output}" toFile="${report.pmd.dir}/pmd_report.${exo.global.reports.output}" />
       <fileset dir="${src-main}">
         <include name="**/*.java" />
